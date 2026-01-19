@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Attendance Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📚 Smart Attendance Calculator</h1>
+        <p class="subtitle">Calculate your attendance percentage and track your progress</p>
+    </div>
+
+    <div class="form-group">
+        <label for="total">Total Classes Conducted</label>
+        <input type="number" id="total" placeholder="Eg: 60" min="1" required>
+        <small>Enter the total number of classes held so far</small>
+    </div>
+
+    <div class="form-group">
+        <label for="attended">Classes Attended</label>
+        <input type="number" id="attended" placeholder="Eg: 45" min="0" required>
+        <small>Enter the number of classes you attended</small>
+    </div>
+
+    <div class="form-group">
+        <label for="remaining">Classes Remaining</label>
+        <input type="number" id="remaining" placeholder="Eg: 20" min="0" required>
+        <small>Enter the number of classes yet to be conducted</small>
+    </div>
+
+    <button onclick="calculate()" class="btn-calculate">Calculate Attendance</button>
+
+    <div id="result" class="result-container"></div>
+
+    <!-- Placeholder banner area (will be used by native ads or web fallback) -->
+    <div id="adBanner" class="ad-banner"></div>
+
+    <!-- Share Button -->
+    <button onclick="shareApp()" class="btn-share">📤 Share App</button>
+    <!-- Remove Ads (calls in-app purchase placeholder) -->
+    <button onclick="purchaseRemoveAds()" class="btn-remove-ads">Remove Ads</button>
+</div>
+
+<!-- Onboarding Modal -->
+<div id="onboardingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeOnboarding()">&times;</span>
+        <h2>Welcome! 👋</h2>
+        <p><strong>Smart Attendance Calculator</strong> helps you track and improve your attendance in seconds.</p>
+        <div class="onboarding-steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <p><strong>Enter Classes:</strong> Total classes, attended, and remaining.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <p><strong>Calculate:</strong> See your current and final attendance %.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <p><strong>Plan:</strong> Know exactly how many classes you need to attend!</p>
+            </div>
+        </div>
+        <button onclick="closeOnboarding()" class="btn-start">Get Started →</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
