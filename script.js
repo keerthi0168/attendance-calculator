@@ -184,8 +184,35 @@ document.addEventListener('DOMContentLoaded', () => {
 // Register service worker for offline/PWA support
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('Service worker registered.', reg))
+        let refreshing = false;
+
+        navigator.serviceWorker.register('./service-worker.js?v=3')
+            .then(reg => {
+                console.log('Service worker registered.', reg);
+
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    if (!newWorker) return;
+
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    refreshing = true;
+                    window.location.reload();
+                });
+
+                reg.update();
+            })
             .catch(err => console.warn('Service worker registration failed:', err));
     });
 }

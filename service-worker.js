@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-v2';
+const CACHE_NAME = 'attendance-v3';
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -24,6 +24,12 @@ self.addEventListener('activate', event => {
     ))
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {
