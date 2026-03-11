@@ -1,0 +1,9 @@
+{
+  "appId": "com.keerthi.attendancecalculator",
+  "appName": "Smart Attendance Calculator",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

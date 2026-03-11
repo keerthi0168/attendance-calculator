@@ -1,15 +1,25 @@
 {
   "name": "attendance-calculator",
   "version": "1.0.0",
+  "description": "Smart Attendance Calculator as a web app and Android app using Capacitor.",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No automated tests configured\" && exit 0",
+    "build:web": "node scripts/build-web.mjs",
+    "android:add": "npm run build:web && npx cap add android",
+    "android:sync": "npm run build:web && npx cap sync android",
+    "android:open": "npx cap open android"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "attendance",
+    "pwa",
+    "capacitor",
+    "android"
+  ],
+  "author": "keerthi0168",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
     "@capacitor/core": "^8.0.0"
   }
