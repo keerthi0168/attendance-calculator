@@ -186,7 +186,16 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         let refreshing = false;
 
-        navigator.serviceWorker.register('./service-worker.js?v=3')
+        const currentController = navigator.serviceWorker.controller;
+        if (currentController && !currentController.scriptURL.includes('service-worker.js?v=4')) {
+            navigator.serviceWorker.getRegistrations()
+                .then(registrations => Promise.all(registrations.map(reg => reg.unregister())))
+                .then(() => window.location.reload())
+                .catch(err => console.warn('Failed to clear stale service workers:', err));
+            return;
+        }
+
+        navigator.serviceWorker.register('./service-worker.js?v=4')
             .then(reg => {
                 console.log('Service worker registered.', reg);
 
