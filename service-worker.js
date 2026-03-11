@@ -1,17 +1,17 @@
 const CACHE_NAME = 'attendance-v1';
 const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(self.skipWaiting())
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -25,16 +25,30 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Network first for API requests, cache-first for others
   const request = event.request;
   if (request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(request).then(response => {
-      // Put a copy in cache
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-      return response;
-    }).catch(() => caches.match(request).then(r => r))
+    fetch(request)
+      .then(response => {
+        // Cache only successful same-origin responses
+        const isSameOrigin = new URL(request.url).origin === self.location.origin;
+        if (response && response.ok && isSameOrigin) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        // For navigation requests, fall back to cached index
+        if (request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+
+        return Response.error();
+      })
   );
 });

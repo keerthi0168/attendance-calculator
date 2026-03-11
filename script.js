@@ -1,9 +1,9 @@
 // Main calculation function
 function calculate() {
     // Get input values
-    let total = parseInt(document.getElementById("total").value);
-    let attended = parseInt(document.getElementById("attended").value);
-    let remaining = parseInt(document.getElementById("remaining").value);
+    let total = parseInt(document.getElementById("total").value, 10);
+    let attended = parseInt(document.getElementById("attended").value, 10);
+    let remaining = parseInt(document.getElementById("remaining").value, 10);
 
     // Validate inputs
     if (!isValidInput(total, attended, remaining)) {
@@ -18,12 +18,13 @@ function calculate() {
     let finalTotal = total + remaining;
     let finalAttended = attended + remaining;
     let finalPercent = ((finalAttended / finalTotal) * 100).toFixed(2);
+    let finalPercentValue = Number(finalPercent);
 
     // Calculate required classes to reach 75% attendance
-    let requiredToPass = Math.ceil(0.75 * finalTotal - attended);
+    let requiredToPass = Math.max(0, Math.ceil(0.75 * finalTotal - attended));
 
     // Display results
-    displayResults(currentPercent, finalPercent, finalAttended, finalTotal, requiredToPass, remaining);
+    displayResults(currentPercent, finalPercent, finalPercentValue, finalAttended, finalTotal, requiredToPass, remaining);
 }
 
 // Validate user inputs
@@ -54,7 +55,7 @@ function displayError(message) {
 }
 
 // Display results
-function displayResults(currentPercent, finalPercent, finalAttended, finalTotal, requiredToPass, remaining) {
+function displayResults(currentPercent, finalPercent, finalPercentValue, finalAttended, finalTotal, requiredToPass, remaining) {
     let resultDiv = document.getElementById("result");
 
     let resultHTML = `
@@ -74,7 +75,7 @@ function displayResults(currentPercent, finalPercent, finalAttended, finalTotal,
     `;
 
     // Check if 75% attendance is achievable
-    if (finalPercent >= 75) {
+    if (finalPercentValue >= 75) {
         resultDiv.className = "result-container success";
         resultHTML += `
             <div class="success-message">
@@ -82,15 +83,26 @@ function displayResults(currentPercent, finalPercent, finalAttended, finalTotal,
             </div>
         `;
     } else {
-        resultDiv.className = "result-container error";
-        resultHTML += `
-            <div class="warning-message">
-                ⚠️ Even if you attend all ${remaining} remaining classes, you'll only reach ${finalPercent}%<br>
-                <br>
-                <strong>To reach 75%:</strong><br>
-                You need to attend at least <strong>${requiredToPass}</strong> out of <strong>${remaining}</strong> remaining classes.
-            </div>
-        `;
+        resultDiv.className = "result-container warning";
+
+        if (requiredToPass > remaining) {
+            resultHTML += `
+                <div class="warning-message">
+                    ⚠️ Even if you attend all <strong>${remaining}</strong> remaining classes, you'll only reach <strong>${finalPercent}%</strong>.<br>
+                    <br>
+                    Reaching <strong>75%</strong> is not possible with the remaining classes.
+                </div>
+            `;
+        } else {
+            resultHTML += `
+                <div class="warning-message">
+                    ⚠️ You are currently below the 75% target.<br>
+                    <br>
+                    <strong>To reach 75%:</strong><br>
+                    You need to attend at least <strong>${requiredToPass}</strong> out of <strong>${remaining}</strong> remaining classes.
+                </div>
+            `;
+        }
     }
 
     resultHTML += `</div>`;
@@ -155,6 +167,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("total").addEventListener('input', saveToLocalStorage);
     document.getElementById("attended").addEventListener('input', saveToLocalStorage);
     document.getElementById("remaining").addEventListener('input', saveToLocalStorage);
+
+    ["total", "attended", "remaining"].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                calculate();
+            }
+        });
+    });
+
     // Show banner ad placeholder on load if applicable
     showBannerAd();
 });
@@ -162,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Register service worker for offline/PWA support
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('./service-worker.js')
             .then(reg => console.log('Service worker registered.', reg))
             .catch(err => console.warn('Service worker registration failed:', err));
     });
