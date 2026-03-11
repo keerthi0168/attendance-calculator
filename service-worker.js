@@ -28,16 +28,24 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (request.method !== 'GET') return;
+  const requestUrl = new URL(request.url);
+  const isHttpRequest = requestUrl.protocol === 'http:' || requestUrl.protocol === 'https:';
+
+  if (request.method !== 'GET' || !isHttpRequest) return;
 
   event.respondWith(
     fetch(request)
       .then(response => {
         // Cache only successful same-origin responses
-        const isSameOrigin = new URL(request.url).origin === self.location.origin;
-        if (response && response.ok && isSameOrigin) {
+        const responseUrl = new URL(response.url || request.url);
+        const isHttpResponse = responseUrl.protocol === 'http:' || responseUrl.protocol === 'https:';
+        const isSameOrigin = requestUrl.origin === self.location.origin;
+
+        if (response && response.ok && isSameOrigin && isHttpResponse) {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {
+            // Ignore cache write failures for non-cacheable requests.
+          });
         }
         return response;
       })
