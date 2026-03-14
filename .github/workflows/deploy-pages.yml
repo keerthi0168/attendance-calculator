@@ -5,6 +5,14 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Branch or tag to deploy
+        required: true
+        default: main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: read
@@ -18,10 +26,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.target_branch || github.ref }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -34,6 +47,16 @@ jobs:
 
       - name: Build static site
         run: npm run build:web
+
+      - name: Verify build output
+        run: |
+          echo "Build output contents:"
+          ls -la ./www
+          for file in index.html style.css script.js manifest.json service-worker.js; do
+            test -f "./www/$file"
+          done
+          echo "Build artifact size:"
+          du -sh ./www
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -49,6 +72,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 10
 
     steps:
       - name: Deploy to GitHub Pages
